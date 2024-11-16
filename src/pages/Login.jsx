@@ -1,26 +1,31 @@
-import React, { useContext } from "react";
-import { Link } from "react-router-dom";
+import React, { useContext, useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { AuthContext } from "../Provider/AuthProvider";
 
 const Login = () => {
+  const { userSignIn, setuser } = useContext(AuthContext);
+  const [error, setError] = useState({});
+  const location = useLocation();
+  const navigate = useNavigate();
 
-  const {userSignIn}=useContext(AuthContext)
-  const handleSubmit=(e)=>{
+  // console.log(location);
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const form = new FormData(e.target);
+    const email = form.get("email");
+    const password = form.get("password");
+    // console.log(email, password);
 
-    e.preventDefault()
-    const form= new FormData(e.target)
-    const email=form.get("email")
-    const password=form.get("password")
-    console.log(email,password)
-
-    userSignIn(email,password
-      .then(result=>{
-        const user=result.user
-        console.log(user)
+    userSignIn(email, password)
+      .then((result) => {
+        const user = result.user;
+        setuser(user);
+        navigate(location?.state ? location.state : "/");
       })
-      .catch(error=> console.log("ERROR ", error.message))
-    )
-  }
+      .catch((err) => {
+        setError({ ...error, login: err.code });
+      });
+  };
   return (
     <div className="min-h-screen flex justify-center items-center">
       <div className="card bg-base-100 w-full max-w-lg p-10 shrink-0 shadow-2xl">
@@ -49,6 +54,11 @@ const Login = () => {
               className="input input-bordered"
               required
             />
+            {error.login && (
+              <label className="label">
+               {error.login}
+              </label>
+            )}
             <label className="label">
               <a href="#" className="label-text-alt link link-hover">
                 Forgot password?
@@ -59,7 +69,12 @@ const Login = () => {
             <button className="btn btn-primary">Login</button>
           </div>
         </form>
-        <p className="text-center font-semibold">Don't have an account ? <Link className="text-red-600" to="/auth/register">Register</Link></p>
+        <p className="text-center font-semibold">
+          Don't have an account ?{" "}
+          <Link className="text-red-600" to="/auth/register">
+            Register
+          </Link>
+        </p>
       </div>
     </div>
   );

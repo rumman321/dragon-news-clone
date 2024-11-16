@@ -1,6 +1,7 @@
-import React, { createContext, useEffect, useState } from 'react';
-import {  createUserWithEmailAndPassword, onAuthStateChanged, signInWithEmailAndPassword, signOut } from "firebase/auth";
+
+import {  createUserWithEmailAndPassword, onAuthStateChanged, signInWithEmailAndPassword, signOut, updateProfile } from "firebase/auth";
 import { auth } from '../firebase/firebase.config';
+import { createContext, useEffect, useState } from "react";
 
 // createContext for data passing
 export const AuthContext=createContext()
@@ -8,21 +9,31 @@ export const AuthContext=createContext()
 
 const AuthProvider = ({children}) => {
     const [user,setuser]=useState(null)
-    console.log(user)
+    const [loading,setLoading]=useState(true)
+    // console.log(user)
 
     // new user
     const createNewUser= (email,password)=>{
+        setLoading(true)
         return createUserWithEmailAndPassword(auth,email,password)
+        
     }
 
     // user signIn
     const userSignIn=(email,password)=>{
+        setLoading(true)
         return signInWithEmailAndPassword(auth,email,password)
+    }
+
+    // user update
+    const unDateUserProfile=(undatedData)=>{
+        return updateProfile(auth.currentUser,undatedData)
     }
 
     // user singOUT
 
     const logOut=()=>{
+        setLoading(true)
         return signOut(auth)
     }
     
@@ -34,6 +45,8 @@ const AuthProvider = ({children}) => {
         createNewUser,
         logOut,
         userSignIn,
+        loading,
+        unDateUserProfile,
 
     }
 
@@ -41,6 +54,7 @@ const AuthProvider = ({children}) => {
     useEffect(()=>{
         const unScribe= onAuthStateChanged(auth, currentUser=>{
             setuser(currentUser)
+            setLoading(false)
         })
 
         return ()=>{
